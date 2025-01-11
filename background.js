@@ -1,5 +1,10 @@
 // background.js
 
+importScripts('ai/model.js');
+
+// Initialize AI model
+initModel();
+
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete') {
@@ -22,17 +27,23 @@ async function processTab(tab) {
     };
 
     // Send tab data to AI module for grouping
-    const group = await getTabGroup(tabData);
+    const group = await predictGroup(tabData);
     if (group) {
-        // Implement grouping logic, e.g., move tab to a specific window or color code
-        console.log(`Tab "${tab.title}" grouped into "${group}"`);
-    }
-}
+        // Fetch existing groups from storage
+        chrome.storage.sync.get(['tabGroups'], (result) => {
+            const groups = result.tabGroups || {};
 
-// Placeholder for AI module integration
-async function getTabGroup(tabData) {
-    // Here you would integrate your AI/ML model to determine the group
-    // For example, send data to TensorFlow.js model and get prediction
-    // This is a placeholder returning a dummy group
-    return 'General';
+            if (!groups[group]) {
+                groups[group] = [];
+            }
+
+            // Avoid duplicate entries
+            if (!groups[group].some(t => t.id === tab.id)) {
+                groups[group].push(tabData);
+                chrome.storage.sync.set({ tabGroups: groups }, () => {
+                    console.log(`Tab "${tab.title}" added to group "${group}"`);
+                });
+            }
+        });
+    }
 }
