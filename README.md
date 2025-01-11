@@ -1,0 +1,1 @@
+# intelligent-tab-manager
