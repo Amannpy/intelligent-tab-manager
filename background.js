@@ -77,4 +77,28 @@ chrome.tabs.onCreated.addListener((newTab) => {
       }
     });
 });
+
+// background.js
+
+const groupPatterns = {
+    'Work': ['https://mail.google.com/*', 'https://docs.google.com/*'],
+    'Social': ['https://www.facebook.com/*', 'https://twitter.com/*']
+  };
+  
+  function groupTabs() {
+    for (const [groupName, patterns] of Object.entries(groupPatterns)) {
+      chrome.tabs.query({}, (tabs) => {
+        const groupTabs = tabs.filter(tab => patterns.some(pattern => new RegExp(pattern.replace(/\*/g, '.*')).test(tab.url)));
+        if (groupTabs.length > 0) {
+          chrome.tabs.group({ tabIds: groupTabs.map(tab => tab.id) }, (groupId) => {
+            chrome.tabGroups.update(groupId, { title: groupName, color: 'blue' });
+          });
+        }
+      });
+    }
+  }
+  
+// Run grouping on startup and when tabs are updated
+chrome.runtime.onStartup.addListener(groupTabs);
+chrome.tabs.onUpdated.addListener(groupTabs);
   
