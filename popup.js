@@ -40,3 +40,29 @@ async function loadTabGroups() {
         }
     });
 }
+// popup.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    chrome.tabs.query({}, (tabs) => {
+      const groups = {}; // Organize tabs into groups
+      tabs.forEach(tab => {
+        // Example grouping logic
+        const group = tab.url.includes('google') ? 'Google' : 'Other';
+        if (!groups[group]) groups[group] = [];
+        groups[group].push(tab);
+      });
+  
+      const groupsContainer = document.getElementById('groups');
+      for (const [groupName, groupTabs] of Object.entries(groups)) {
+        const groupDiv = document.createElement('div');
+        groupDiv.innerHTML = `<h2>${groupName}</h2>`;
+        groupTabs.forEach(tab => {
+          const tabElement = document.createElement('div');
+          tabElement.textContent = tab.title;
+          groupDiv.appendChild(tabElement);
+        });
+        groupsContainer.appendChild(groupDiv);
+      }
+    });
+});
+  
