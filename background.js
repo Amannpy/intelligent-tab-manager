@@ -65,4 +65,16 @@ function suspendTabs() {
   
 // Set interval to check every 15 minutes
 setInterval(suspendTabs, 15 * 60 * 1000);
+
+// background.js
+
+chrome.tabs.onCreated.addListener((newTab) => {
+    chrome.tabs.query({}, (tabs) => {
+      const duplicates = tabs.filter(tab => tab.url === newTab.url && tab.id !== newTab.id);
+      if (duplicates.length > 0) {
+        chrome.tabs.remove(newTab.id);
+        alert('Duplicate tab closed!');
+      }
+    });
+});
   
