@@ -47,3 +47,22 @@ async function processTab(tab) {
         });
     }
 }
+
+// background.js
+
+// Function to suspend inactive tabs
+function suspendTabs() {
+    chrome.tabs.query({}, (tabs) => {
+      const now = Date.now();
+      tabs.forEach(tab => {
+        // If tab hasn't been active for 30 minutes
+        if (now - (tab.lastActive || now) > 30 * 60 * 1000) {
+          chrome.tabs.update(tab.id, { url: 'chrome://suspend-page/' });
+        }
+      });
+    });
+  }
+  
+// Set interval to check every 15 minutes
+setInterval(suspendTabs, 15 * 60 * 1000);
+  
